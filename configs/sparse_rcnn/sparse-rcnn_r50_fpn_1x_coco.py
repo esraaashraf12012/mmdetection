@@ -2,6 +2,7 @@ _base_ = [
     '../_base_/datasets/coco_detection.py',
     '../_base_/schedules/schedule_1x.py', '../_base_/default_runtime.py'
 ]
+num_classes=3 #number of classes for helmet detection dataset
 num_stages = 6
 num_proposals = 100
 model = dict(
@@ -46,7 +47,7 @@ model = dict(
         bbox_head=[
             dict(
                 type='DIIHead',
-                num_classes=80,
+                num_classes=num_classes,
                 num_ffn_fcs=2,
                 num_heads=8,
                 num_cls_fcs=1,
@@ -63,14 +64,18 @@ model = dict(
                     input_feat_shape=7,
                     act_cfg=dict(type='ReLU', inplace=True),
                     norm_cfg=dict(type='LN')),
-                loss_bbox=dict(type='L1Loss', loss_weight=5.0),
+                loss_bbox=dict(type='L1Loss', loss_weight=1.0),
                 loss_iou=dict(type='GIoULoss', loss_weight=2.0),
-                loss_cls=dict(
-                    type='FocalLoss',
+                #loss_cls=dict(
+                #    type='FocalLoss',
+                #    use_sigmoid=True,
+                #    gamma=2.0,
+                #    alpha=0.25,
+                #    loss_weight=2.0),
+                loss_cls=dict( #use this loss for helmet detection to compare with YOLOX, and faster-rcnn
+                    type='CrossEntropyLoss',
                     use_sigmoid=True,
-                    gamma=2.0,
-                    alpha=0.25,
-                    loss_weight=2.0),
+                    loss_weight=1.0),    
                 bbox_coder=dict(
                     type='DeltaXYWHBBoxCoder',
                     clip_border=False,
